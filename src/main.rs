@@ -26,9 +26,9 @@ impl Parser{
     fn new() -> Self {
         if env::args().len() > 1
         {
-            let mut render = if let Some(_) = env::args().find(|arg|&String::from("-r") == arg){true} else {false};
-            let mut verbose = if let Some(_) = env::args().find(|arg|&String::from("-v") == arg){true} else {false};
-            let mut noAI = if let Some(_) = env::args().find(|arg|&String::from("-noAI") == arg){true} else {false};
+            let render = if let Some(_) = env::args().find(|arg|&String::from("-r") == arg){true} else {false};
+            let verbose = if let Some(_) = env::args().find(|arg|&String::from("-v") == arg){true} else {false};
+            let noAI = if let Some(_) = env::args().find(|arg|&String::from("-noAI") == arg){true} else {false};
             return Parser{render, verbose, noAI}
         }
         Parser::default()
@@ -39,7 +39,7 @@ impl Parser{
         if self.verbose {
             
         }
-        if self.noAI {
+        if !self.noAI {
 
         }
         if self.render {

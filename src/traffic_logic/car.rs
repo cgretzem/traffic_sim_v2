@@ -1,4 +1,4 @@
-use super::{intersection::Intersection, road::Direction};
+use super::{road::Direction};
 
 
 
@@ -22,6 +22,17 @@ impl Default for Position{
     fn default() -> Self {
         Position{between: None, current: None}
     }
+}
+
+impl Position{
+    pub fn new_between(int_1: u32, int_2: u32, progress:u32, distance_to_next_intersection: u32, arrival_direction: Direction) -> Position{
+        Position{between: Some(Between{intersection_1: int_1, intersection_2: int_2, progress, distance_to_next_intersection, arrival_direction}), current:None}
+    }
+
+    pub fn new_current(id: u32, direction: Direction) -> Position{
+        Position { between: None, current: Some(CurrentInt{id, direction}) }
+    }
+    
 }
 
 
@@ -51,6 +62,9 @@ struct Between{
 }
 
 ///represents a car
+/// # Members
+/// * `id` - the id of the car
+/// * `position` - the position of the car relative to intersections
 pub struct Car
 {
     /// the ID of the car
@@ -61,17 +75,28 @@ pub struct Car
 
 impl Car{
     ///creates a new car
-    fn new(id : u32) -> Self{
+    pub fn new(id : u32) -> Self{
         Car{id, position: Position::default()}
     }
 
     ///returns a reference to the car's position
-    fn get_position(&self) -> &Position{
+    pub fn get_position(&self) -> &Position{
         &self.position
     }
 
-    fn get_position_mut(&mut self) -> &mut Position{
+    ///returns a mutable reference to the car's position
+    pub fn get_position_mut(&mut self) -> &mut Position{
         &mut self.position
+    }
+
+    ///returns the car's id
+    pub fn get_id(&self) -> u32{
+        self.id
+    }
+
+    //sets the car's position to a new position
+    pub fn set_position(&mut self, pos: Position){
+        self.position = pos;
     }
 
 
