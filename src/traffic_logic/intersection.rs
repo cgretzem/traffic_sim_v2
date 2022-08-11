@@ -1,9 +1,9 @@
 use std::{collections::HashMap};
-use rand::Rng;
+use rand::{Rng, seq::SliceRandom};
 
 use super::road::Direction;
 
-#[derive(Clone, Copy, Default)]
+#[derive(Clone, Copy, Default, PartialEq, Eq, Debug)]
 ///represents the color of a light
 pub enum LightColor{
     #[default]
@@ -12,23 +12,38 @@ pub enum LightColor{
 }
 
 
+
 ///Represents an Intersection. An intersection has 4 lights in the 4 cardinal directions
 pub struct Intersection
 {
     ///the ID of the intersection
     id: u32,
-    /// the north light of the intersection
-    north : LightColor,
-    /// the east light of the intersection
-    east : LightColor,
-    ///the south light of the intersection
-    south : LightColor,
-    ///the west light of the intersection
-    west : LightColor,
-    ///the probability of a car turning a certain direction at a given light
+    lights: LightConfig,
     turn_probabilities : HashMap<Direction, u8>,
     ///the number of cars that can go at once
     num_lanes : u8
+}
+#[derive(Clone, Copy, Debug)]
+pub struct LightConfig{
+     /// the north light of the intersection
+     pub north : LightColor,
+     /// the east light of the intersection
+     pub east : LightColor,
+     ///the south light of the intersection
+     pub south : LightColor,
+     ///the west light of the intersection
+     pub west : LightColor,
+}
+
+impl LightConfig{
+    pub fn get_direction(&self, dir : Direction) -> LightColor{
+        match dir{
+            Direction::North => self.north,
+            Direction::South => self.south,
+            Direction::East => self.east,
+            Direction::West => self.west
+        }
+    }
 }
 
 impl Intersection{
@@ -43,16 +58,17 @@ impl Intersection{
         map.insert(Direction::East, 25);
         map.insert(Direction::South, 25);
         map.insert(Direction::West, 25);
-        Intersection {id, north: Red, east: Red, south: Red, west: Red, turn_probabilities: HashMap::new(), num_lanes}
+        
+        Intersection {id, lights: LightConfig{north: Red, east: Red, south: Red, west: Red}, turn_probabilities:map, num_lanes}
     }
 
     //sets the light in the direction specified
     pub fn set_light(&mut self, dir : Direction, new_color : LightColor){
         match dir{
-            Direction::North => {self.north = new_color},
-            Direction::East => {self.east = new_color},
-            Direction::South => {self.south = new_color},
-            _ => {self.west = new_color}
+            Direction::North => {self.lights.north = new_color},
+            Direction::East => {self.lights.east = new_color},
+            Direction::South => {self.lights.south = new_color},
+            _ => {self.lights.west = new_color}
         };
     }
 
@@ -61,16 +77,43 @@ impl Intersection{
     /// * `East`
     /// * `South`
     /// * `West`
-    pub fn set_lights(&mut self, north : LightColor, east : LightColor, south : LightColor, west : LightColor, ){
-        self.north = north;
-        self.east = east;
-        self.west = west;
-        self.south = south;
+    pub fn set_lights(&mut self, lights: LightConfig ){
+        self.lights.north = lights.north;
+        self.lights.east = lights.east;
+        self.lights.west = lights.west;
+        self.lights.south = lights.south;
+    }
+
+    pub fn get_lights(&self) -> LightConfig
+    {
+        self.lights
+    }
+
+
+    pub fn get_all_light_configs() -> [LightConfig;6]{
+        use LightColor::{Green, Red};
+        let mut configs:[LightConfig;6] = [LightConfig{north:Green, east: Red, south: Green, west:Red};6];
+
+        configs[0] = LightConfig{north:Green, east: Red, south: Green, west:Red};
+        configs[1] = LightConfig{north:Red, east: Green, south: Red, west:Green};
+        configs[2] = LightConfig{north:Green, east: Red, south: Red, west:Red};
+        configs[3] = LightConfig{north:Red, east: Green, south: Red, west:Red};
+        configs[4] = LightConfig{north:Red, east: Red, south: Green, west:Red};
+        configs[5] = LightConfig{north:Red, east: Red, south: Red, west:Green};
+        configs
+    }
+
+    pub fn get_random_config() -> LightConfig{
+        *Self::get_all_light_configs().choose(&mut rand::thread_rng()).unwrap()
     }
 
     ///Sets the turn probability in a given direction
     fn set_probabilities(&mut self, dir: Direction, new_prob: u8){ 
        *self.turn_probabilities.entry(dir).or_insert(25) = new_prob;
+    }
+
+    pub fn get_id(&self) -> u32{
+        self.id
     }
 
     ///Sets the turn probabilities in the order
@@ -106,5 +149,10 @@ impl Intersection{
             Direction::West
         }
 
+    }
+
+
+    pub fn get_num_lanes(&self) -> u8{
+        self.num_lanes
     }
 }

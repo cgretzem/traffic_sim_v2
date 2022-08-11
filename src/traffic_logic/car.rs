@@ -8,12 +8,13 @@ use super::{road::Direction};
 /// # Members
 /// * `between` : Option<Between> - information when the car is between 2 intersections
 /// * `current` : Option<CurrentInt> - information when the car is at an intersection 
+#[derive(Debug)]
 pub struct Position
 {
     ///Information for when the car is between 2 intersections
-    between: Option<Between>,
+    pub between: Option<Between>,
     ///Information for when the car is at an intersection
-    current: Option<CurrentInt>
+    pub current: Option<CurrentInt>
 }
 
 
@@ -40,25 +41,27 @@ impl Position{
 /// # Members
 /// * `id` - the id of the intersection the car is sitting at
 /// * `direction` - the cardinal direction that the car is waiting at
-struct CurrentInt{
+#[derive(Debug)]
+pub struct CurrentInt{
     ///the ID of the intersection
-    id: u32,
+    pub id: u32,
     ///the cardinal direction the car is waiting
-    direction : Direction
+    pub direction : Direction
 }
 
 ///Represents a car driving between 2 intersections
-struct Between{
+#[derive(Debug)]
+pub struct Between{
     ///the id of the intersection the car is coming from
-    intersection_1: u32, 
+    pub intersection_1: u32, 
     ///the id of the intersection the car is going to
-    intersection_2: u32,
+    pub intersection_2: u32,
     ///how far the car has gone from the source intersection
-    progress: u32,
+    pub progress: u32,
     ///the total distance from intersection 1 to intersection 2
-    distance_to_next_intersection: u32,
+    pub distance_to_next_intersection: u32,
     ///the cardinal direction the car will arrive at
-    arrival_direction: Direction
+    pub arrival_direction: Direction
 }
 
 ///represents a car
@@ -70,13 +73,15 @@ pub struct Car
     /// the ID of the car
     id: u32,
     ///The current position of the car
-    position : Position 
+    position : Position,
+    ///the direction the car wants to turn, initalized when a car arrives at an intersection
+    intent: Direction
 }
 
 impl Car{
     ///creates a new car
     pub fn new(id : u32) -> Self{
-        Car{id, position: Position::default()}
+        Car{id, position: Position::default(), intent:Direction::default()}
     }
 
     ///returns a reference to the car's position
@@ -97,6 +102,18 @@ impl Car{
     //sets the car's position to a new position
     pub fn set_position(&mut self, pos: Position){
         self.position = pos;
+    }
+
+    pub fn get_intent(&self) -> Direction{
+        self.intent
+    }
+
+    pub fn set_intent(&mut self, new_intent : Direction){
+        self.intent = new_intent
+    }
+
+    pub fn set_random_start(&mut self, int_id:u32){
+        self.set_position(Position::new_current(int_id, Direction::get_random_dir()));
     }
 
 
