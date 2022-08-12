@@ -26,10 +26,11 @@ impl Default for Position{
 }
 
 impl Position{
+    ///sets a new position with a filled between struct and an empty current struct
     pub fn new_between(int_1: u32, int_2: u32, progress:u32, distance_to_next_intersection: u32, arrival_direction: Direction) -> Position{
         Position{between: Some(Between{intersection_1: int_1, intersection_2: int_2, progress, distance_to_next_intersection, arrival_direction}), current:None}
     }
-
+    ///sets a new position with a filled current struct and an empty between struct
     pub fn new_current(id: u32, direction: Direction) -> Position{
         Position { between: None, current: Some(CurrentInt{id, direction}) }
     }
@@ -103,15 +104,15 @@ impl Car{
     pub fn set_position(&mut self, pos: Position){
         self.position = pos;
     }
-
+    ///gets the car's intention
     pub fn get_intent(&self) -> Direction{
         self.intent
     }
-
+    ///sets the car's intention to a new Direction
     pub fn set_intent(&mut self, new_intent : Direction){
         self.intent = new_intent
     }
-
+    ///sets the position of the car to a random direction at a given intersection
     pub fn set_random_start(&mut self, int_id:u32){
         self.set_position(Position::new_current(int_id, Direction::get_random_dir()));
     }

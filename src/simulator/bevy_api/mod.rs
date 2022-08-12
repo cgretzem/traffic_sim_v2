@@ -2,7 +2,7 @@ pub mod car;
 pub mod road;
 pub mod intersection;
 
-use bevy::{app::PluginGroupBuilder, prelude::{PluginGroup, Plugin, App}};
+use bevy::{app::PluginGroupBuilder, prelude::{PluginGroup, Plugin, App}, window::WindowDescriptor};
 pub struct TrafficPlugin;
 
 impl PluginGroup for TrafficPlugin{
@@ -21,3 +21,4 @@ impl Plugin for RenderPlugin{
 
     }
 }
+

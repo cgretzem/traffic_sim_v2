@@ -35,7 +35,8 @@
 //     }
 
 //     fn run(&self) {
-//         let mut app = App::new();
+//         let mut app = App::new()
+//                          .add_system(bevy::window::close_on_esc);
 //         if self.verbose {
             
 //         }
