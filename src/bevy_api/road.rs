@@ -1,7 +1,9 @@
 use std::collections::HashMap;
 
 use bevy::{prelude::*};
-use crate::{simulator::Simulator, traffic_logic::road::{Direction}};
+use crate::{simulator::Simulator, traffic_logic::road::{Direction}, bevy_api::components::Moveable};
+
+use super::{GameTextures, ROAD_SPRITE_SIZE};
 
 #[derive(Component)]
 struct Intersection(Vec2);
@@ -17,15 +19,16 @@ impl Plugin for RoadPlugin{
 
 
 // region:    --- Road Constants
-const ROAD_UNIT_DISTANCE: f32 = 20.;
-const INTERSECTION_SIZE: f32 = 20.;
+const ROAD_UNIT_DISTANCE: f32 = 50.;
+const INTERSECTION_SIZE: f32 = 50.;
 // endregion: --- Road Constants
 
 
 
 fn road_startup_system(
     mut commands: Commands,
-    sim : Res<Simulator>
+    sim : Res<Simulator>,
+    gt : Res<GameTextures>
 ){
     //calculate first intersection
     let mut fringe:Vec<u32> = Vec::new();
@@ -45,6 +48,7 @@ fn road_startup_system(
         },
         ..Default::default()
     })
+    .insert(Moveable)
     .insert(Intersection(Vec2::new(0.,0.)));
 
 
@@ -57,11 +61,11 @@ fn road_startup_system(
     //adding all new intersections to fringe
     while !fringe.is_empty(){
         fringe.retain(|id|{
-            let int_coords = int_map.entry(*id).or_insert((0.,0.));
+            let int_coords = int_map.entry(*id).or_insert((0.,0.)).clone();
             let connections = sim.road.get_all_connections(id);
             for conn in &connections{
 
-                used_roads.push((*id, conn.next_intersection));
+                
                 let (x_mul, y_mul) = match conn.direction{
                     Direction::North => (0f32, 1f32),
                     Direction::East => (1f32, 0f32),
@@ -69,13 +73,24 @@ fn road_startup_system(
                     _ => (-1., 0.)
                 };
 
+                //compute scale
+                let (x_scale, y_scale) = (INTERSECTION_SIZE/ROAD_SPRITE_SIZE.0, ((ROAD_UNIT_DISTANCE* conn.distance as f32) - INTERSECTION_SIZE/2.) /ROAD_SPRITE_SIZE.1);
+
+                // let (x_scale, y_scale) = if x_mul != 0.{
+                //     (((ROAD_UNIT_DISTANCE* conn.distance as f32) - INTERSECTION_SIZE/2.)/ROAD_SPRITE_SIZE.0 , INTERSECTION_SIZE/ROAD_SPRITE_SIZE.1)
+                // }
+                // else{
+                //     (INTERSECTION_SIZE/ROAD_SPRITE_SIZE.0, ((ROAD_UNIT_DISTANCE* conn.distance as f32) - INTERSECTION_SIZE/2.) /ROAD_SPRITE_SIZE.1)
+                // };
+                
+                //creating intersections
                 let x_offset = (conn.distance as f32 * ROAD_UNIT_DISTANCE + INTERSECTION_SIZE/2.)* x_mul;
                 let y_offset = (conn.distance as f32 * ROAD_UNIT_DISTANCE + INTERSECTION_SIZE/2.)* y_mul;
                 let (x,y) = (
                     x_offset + int_coords.0,
                     y_offset + int_coords.1
                 );
-                println!("Spawning intersection {} at {:?}", conn.next_intersection, (x,y));
+                
                 commands.spawn_bundle(SpriteBundle{
                     sprite: Sprite {
                         color: Color::rgba(1., 1., 1., 1.),
@@ -88,7 +103,41 @@ fn road_startup_system(
                     },
                     ..Default::default()
                 })
+                .insert(Moveable)
                 .insert(Intersection(Vec2::new(x,y)));
+
+                int_map.insert(conn.next_intersection, (x,y));
+
+                if let None = used_roads
+                .iter()
+                .find(|tup|{
+                    **tup == (*id, conn.next_intersection) || **tup == (conn.next_intersection, *id)
+                }){
+                    let rotation:f32 = if x_mul != 0.{
+                        1.5708
+                    }
+                    else{
+                        0.
+                    };
+                    println!("{y_mul}");
+                    println!("Spawning road at {:?} for int {} to int {}", ((x + int_coords.0)/2., (y + int_coords.1)/2.), id, conn.next_intersection);
+                    commands.spawn_bundle(SpriteBundle{
+                        texture : gt.road.clone(),
+                        transform: Transform{
+                            scale: Vec3::new(x_scale, y_scale, 1.),
+                            translation : Vec3::new( 
+                                (x + int_coords.0)/2.,
+                                (y + int_coords.1)/2., 5.),
+                            rotation:Quat::from_rotation_z(rotation),
+                            ..Default::default()
+                        },
+                        ..Default::default()
+                        
+                    })
+                    .insert(Moveable);
+                    used_roads.push((*id, conn.next_intersection));
+                }
+                
 
                 new_fringe.push(conn.next_intersection);
                 
