@@ -1,8 +1,8 @@
-pub mod bevy_api;
-use std::{collections::{HashMap, HashSet}, hash::Hash};
+
+use std::{collections::{HashMap, HashSet}};
 
 
-use crate::traffic_logic::{car::{Car, Position}, intersection::{Intersection, LightColor, LightConfig}, road::{Road, Direction}};
+use crate::traffic_logic::{car::{Car, Position}, intersection::{Intersection, LightColor, LightConfig}, road::Road};
 
 
 
@@ -10,7 +10,7 @@ pub struct Simulator
 {
     cars : Vec<Car>,
     intersections: HashMap<u32, Intersection>,
-    road: Road,
+    pub road: Road,
     tick_num : usize,
     pub verbose: bool
     
@@ -19,15 +19,18 @@ pub struct Simulator
 impl Simulator{
     pub fn new(num_cars: u32, road:Road) -> Self{
         let mut sim = Simulator { cars:Vec::new(), intersections: HashMap::new(), road, tick_num:0, verbose:true};
+
+        for int in sim.road.get_all_intersections(){
+            sim.intersections.insert(int, Intersection::new(int, 3));
+        }
+
         for i in 0..num_cars{
             let mut car = Car::new(i);
             let int_id = &sim.road.get_random_intersection();
             car.set_random_start(*int_id);
             sim.cars.push(car);
         }
-        for int in sim.road.get_all_intersections(){
-            sim.intersections.insert(int, Intersection::new(int, 3));
-        }
+        
         sim
     }
 
@@ -158,6 +161,9 @@ impl Simulator{
         if self.verbose{println!("Car {} cannot advance in direction {:?} because the lights are {:#?}", car_id, intent, config);}
             None
     }
-
+    
+    pub fn get_random_intersection(&self) -> u32{
+        self.road.get_random_intersection()
+    }
 
 }

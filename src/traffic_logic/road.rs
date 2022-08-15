@@ -1,11 +1,11 @@
 use bevy::utils::HashMap;
 use rand::{Rng, seq::{SliceRandom, IteratorRandom}};
-#[derive(Debug)]
-struct Connection
+#[derive(Debug, Clone, Copy)]
+pub struct Connection
 {
-    direction: Direction,
-    distance: u32,
-    next_intersection: u32
+    pub direction: Direction,
+    pub distance: u32,
+    pub next_intersection: u32
 }
 #[derive(Debug)]
 struct RoadNode
@@ -127,5 +127,14 @@ impl Road{
             new_vec.push(*key);
         }
         new_vec
+    }
+
+
+    pub fn get_all_connections(&self, id: &u32) -> Vec<Connection>{
+        let mut connections:Vec<Connection> = Vec::new();
+        for conn in &self.graph.get(id).unwrap_or_else(||panic!("Could not find intersection to get connections to")).connnections{
+            connections.push(conn.clone());
+        }
+        connections
     }
 }

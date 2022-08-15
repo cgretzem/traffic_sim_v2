@@ -52,22 +52,26 @@
 
 
 use traffic_sim_v2::{simulator::Simulator, traffic_logic::road::{Road, Direction}};
+use traffic_sim_v2::bevy_api::run;
 fn main() {
     //Parser::new().run()
 
-    let mut road = Road::new();
-    road.add_connection(0, 1, 5, Direction::North);
-    road.add_connection(1, 2, 5, Direction::North);
-    let mut sim = Simulator::new(40,road);
-    sim.verbose = false;
-    use std::time::Instant;
-    let now = Instant::now();
+    // let mut road = Road::new();
+    // road.add_connection(0, 1, 5, Direction::North);
+    // road.add_connection(1, 2, 5, Direction::North);
+    // let mut sim = Simulator::new(40,road);
+    // sim.verbose = false;
+    // use std::time::Instant;
+    // let now = Instant::now();
 
-    for tick in 0..1000{
-        //println!("----------------------\nTICK {}\n----------------------\n", tick);
-        sim.tick();
-    }
+    // for tick in 0..1000{
+    //     //println!("----------------------\nTICK {}\n----------------------\n", tick);
+    //     sim.tick();
+    // }
 
-    let elapsed = now.elapsed();
-    println!("Elapsed: {:.2?}", elapsed);
+    // let elapsed = now.elapsed();
+    // println!("Elapsed: {:.2?}", elapsed);
+
+
+    run()
 }
