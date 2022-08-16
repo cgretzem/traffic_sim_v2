@@ -112,10 +112,6 @@ impl Car{
     pub fn set_intent(&mut self, new_intent : Direction){
         self.intent = new_intent
     }
-    ///sets the position of the car to a random direction at a given intersection
-    pub fn set_random_start(&mut self, int_id:u32){
-        self.set_position(Position::new_current(int_id, Direction::get_random_dir()));
-    }
 
 
 }

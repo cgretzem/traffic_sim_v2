@@ -1,12 +1,22 @@
 use std::collections::HashMap;
 
 use bevy::{prelude::*};
-use crate::{simulator::Simulator, traffic_logic::road::{Direction}, bevy_api::components::Moveable};
+use crate::{simulator::Simulator, traffic_logic::road::Direction, bevy_api::components::Moveable};
 
 use super::{GameTextures, ROAD_SPRITE_SIZE};
 
+// region:    --- Road Components
 #[derive(Component)]
-struct Intersection(Vec2);
+struct IntersectionComponent;
+
+#[derive(Component)]
+struct RoadComponent{
+    int_1_id: u32, // bottom or left
+    int_2_id: u32,
+    vert: bool,
+}
+
+// endregion: --- Road Components
 
 
 pub struct RoadPlugin;
@@ -48,7 +58,7 @@ fn road_startup_system(
         ..Default::default()
     })
     .insert(Moveable)
-    .insert(Intersection(Vec2::new(0.,0.)));
+    .insert(IntersectionComponent);
 
 
     fringe.push(root); // adding inital intersection to fringe
@@ -103,7 +113,7 @@ fn road_startup_system(
                     ..Default::default()
                 })
                 .insert(Moveable)
-                .insert(Intersection(Vec2::new(x,y)));
+                .insert(IntersectionComponent);
 
                 int_map.insert(conn.next_intersection, (x,y));
 
@@ -150,8 +160,5 @@ fn road_startup_system(
         }
         new_fringe.clear();
     }
-    // let fringe:Vec<u32> = connections
-    //     .iter()
-    //     .map(|conn| conn.next_intersection)
-    //     .collect();
+
 }

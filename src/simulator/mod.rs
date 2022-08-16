@@ -2,7 +2,9 @@
 use std::{collections::{HashMap, HashSet}};
 
 
-use crate::traffic_logic::{car::{Car, Position}, intersection::{Intersection, LightColor, LightConfig}, road::Road};
+use rand::seq::SliceRandom;
+
+use crate::traffic_logic::{car::{Car, Position}, intersection::{Intersection, LightColor, LightConfig}, road::{Road, Direction}};
 
 
 
@@ -11,14 +13,13 @@ pub struct Simulator
     cars : Vec<Car>,
     intersections: HashMap<u32, Intersection>,
     pub road: Road,
-    tick_num : usize,
     pub verbose: bool
     
 }
 
 impl Simulator{
     pub fn new(num_cars: u32, road:Road) -> Self{
-        let mut sim = Simulator { cars:Vec::new(), intersections: HashMap::new(), road, tick_num:0, verbose:true};
+        let mut sim = Simulator { cars:Vec::new(), intersections: HashMap::new(), road, verbose:true};
 
         for int in sim.road.get_all_intersections(){
             sim.intersections.insert(int, Intersection::new(int, 3));
@@ -27,13 +28,30 @@ impl Simulator{
         for i in 0..num_cars{
             let mut car = Car::new(i);
             let int_id = &sim.road.get_random_intersection();
-            car.set_random_start(*int_id);
+            sim.set_random_start(&car.get_id(), int_id);
             sim.cars.push(car);
         }
         
         sim
     }
 
+    fn set_random_start(&mut self, car_id: &u32, int_id: &u32){
+        let car = self.cars
+            .iter_mut()
+            .find(|car| car.get_id() == *car_id)
+            .unwrap_or_else(|| panic!("Could not find car specified"));
+        
+        let intersection_dirs: Vec<Direction> = self.road
+            .get_all_connections(&int_id)
+            .iter()
+            .map(|conn| conn.direction)
+            .collect();
+
+        let dir = intersection_dirs.choose(&mut rand::thread_rng())
+            .unwrap_or_else(|| panic!("Intersection {int_id} has no connections!"));
+
+        car.set_position(Position::new_current(*int_id, *dir))
+    }
 
     pub fn tick(&mut self) {
         self.tick_lights_random();
@@ -117,7 +135,16 @@ impl Simulator{
             return None
         }
         let car = car.unwrap();
-        let intersection = self.intersections.get(&car.get_position().current.as_ref().unwrap_or_else(||panic!("Car: {}\nPosition {:#?}",car.get_id(), &car.get_position())).id).unwrap();
+        let intersection = self.intersections
+            .get(&car.get_position()
+                .current
+                .as_ref()
+                .unwrap_or_else(||
+                    panic!("Car: {}\nPosition {:#?}",car.get_id(), &car.get_position())
+                )
+                .id
+            )
+            .unwrap();
         let config = intersection.get_lights();
         let intent = car.get_intent();
         let curr = car.get_position().current.as_ref().unwrap();
