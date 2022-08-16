@@ -6,5 +6,5 @@ use bevy::prelude::Component;
 pub struct Moveable;
 
 
-// endregion: --- General Componentspub struct Moveable;
+// endregion: --- General Components
 

@@ -35,7 +35,6 @@ fn road_startup_system(
     let root = sim.get_random_intersection();
 
     //spawn inital intersection at 0,0, center of screen
-    println!("Spawning intersection {} at {:?}", root, (0,0));
     commands.spawn_bundle(SpriteBundle{
         sprite: Sprite {
             color: Color::rgba(1., 1., 1., 1.),
@@ -119,8 +118,6 @@ fn road_startup_system(
                     else{
                         0.
                     };
-                    println!("{y_mul}");
-                    println!("Spawning road at {:?} for int {} to int {}", ((x + int_coords.0)/2., (y + int_coords.1)/2.), id, conn.next_intersection);
                     commands.spawn_bundle(SpriteBundle{
                         texture : gt.road.clone(),
                         transform: Transform{
