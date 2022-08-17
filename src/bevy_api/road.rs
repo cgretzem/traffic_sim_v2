@@ -10,10 +10,10 @@ use super::{GameTextures, ROAD_SPRITE_SIZE};
 struct IntersectionComponent;
 
 #[derive(Component)]
-struct RoadComponent{
-    int_1_id: u32, // bottom or left
-    int_2_id: u32,
-    vert: bool,
+pub struct RoadComponent{
+    pub intersection : u32,
+    pub direction : Direction,
+    pub num_cars : u32
 }
 
 // endregion: --- Road Components
@@ -140,6 +140,16 @@ fn road_startup_system(
                         },
                         ..Default::default()
                         
+                    })
+                    .insert(RoadComponent{
+                        intersection : *id,
+                        direction : conn.direction,
+                        num_cars : 0
+                    })
+                    .insert(RoadComponent{
+                        intersection : conn.next_intersection,
+                        direction : conn.direction.get_straight_dir(),
+                        num_cars: 0
                     })
                     .insert(Moveable);
                     used_roads.push((*id, conn.next_intersection));

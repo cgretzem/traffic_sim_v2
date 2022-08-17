@@ -28,18 +28,19 @@ impl Simulator{
         for i in 0..num_cars{
             let mut car = Car::new(i);
             let int_id = &sim.road.get_random_intersection();
-            sim.set_random_start(&car.get_id(), int_id);
+            sim.set_random_start(&mut car, int_id);
             sim.cars.push(car);
         }
         
         sim
     }
 
-    fn set_random_start(&mut self, car_id: &u32, int_id: &u32){
-        let car = self.cars
-            .iter_mut()
-            .find(|car| car.get_id() == *car_id)
-            .unwrap_or_else(|| panic!("Could not find car specified"));
+    pub fn get_cars(&self) -> &Vec<Car>{
+        &self.cars
+    }
+
+    fn set_random_start(&mut self, car: &mut Car, int_id: &u32){
+        
         
         let intersection_dirs: Vec<Direction> = self.road
             .get_all_connections(&int_id)
