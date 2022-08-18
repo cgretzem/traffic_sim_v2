@@ -13,10 +13,17 @@ use self::components::Moveable;
 // region:    --- Game Textures
 const ROAD_SPRITE:&str = "road.png";
 const ROAD_SPRITE_SIZE:(f32, f32) = (154., 258.);
-const SCROLL_SPEED:f32 = 10.;
 
+
+const CAR_SPRITE:&str = "car_small.png";
+const CAR_SPRITE_SIZE:(f32, f32) = (376., 695.);
 
 // endregion: --- Game Textures`
+
+
+// region:    --- Game Constants
+const SCROLL_SPEED:f32 = 10.;
+// endregion: --- Game Constants
 
 
 pub struct GameTextures{
