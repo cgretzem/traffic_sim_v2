@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use bevy::{prelude::*};
-use crate::{simulator::Simulator, traffic_logic::road::Direction, bevy_api::components::Moveable};
+use crate::{simulator::Simulator, traffic_logic::road::Direction, bevy_api::{components::{Moveable, Scaleable}, INTERSECTION_SIZE, ROAD_UNIT_DISTANCE}};
 
 use super::{GameTextures, ROAD_SPRITE_SIZE};
 
@@ -11,8 +11,10 @@ struct IntersectionComponent;
 
 #[derive(Component)]
 pub struct RoadComponent{
-    pub intersection : u32,
-    pub direction : Direction,
+    pub intersection1 : u32,
+    pub direction1 : Direction,
+    pub intersection2: u32,
+    pub direction2 : Direction,
     pub num_cars : u32
 }
 
@@ -29,17 +31,17 @@ impl Plugin for RoadPlugin{
 
 
 // region:    --- Road Constants
-const ROAD_UNIT_DISTANCE: f32 = 50.;
-const INTERSECTION_SIZE: f32 = 50.;
+
 // endregion: --- Road Constants
 
 
 
-fn road_startup_system(
+pub fn road_startup_system(
     mut commands: Commands,
     sim : Res<Simulator>,
     gt : Res<GameTextures>
 ){
+    println!("Running Road Startup");
     //calculate first intersection
     let mut fringe:Vec<u32> = Vec::new();
     let root = sim.get_random_intersection();
@@ -52,12 +54,13 @@ fn road_startup_system(
             ..Default::default()
         },
         transform: Transform{
-            translation: Vec3::new(0.,0., 5.),
+            translation: Vec3::new(0.,0., 15.),
             ..Default::default()
         },
         ..Default::default()
     })
     .insert(Moveable)
+    .insert(Scaleable)
     .insert(IntersectionComponent);
 
 
@@ -113,6 +116,7 @@ fn road_startup_system(
                     ..Default::default()
                 })
                 .insert(Moveable)
+                .insert(Scaleable)
                 .insert(IntersectionComponent);
 
                 int_map.insert(conn.next_intersection, (x,y));
@@ -134,7 +138,8 @@ fn road_startup_system(
                             scale: Vec3::new(x_scale, y_scale, 1.),
                             translation : Vec3::new( 
                                 (x + int_coords.0)/2.,
-                                (y + int_coords.1)/2., 5.),
+                                (y + int_coords.1)/2.,
+                                15.),
                             rotation:Quat::from_rotation_z(rotation),
                             ..Default::default()
                         },
@@ -142,16 +147,14 @@ fn road_startup_system(
                         
                     })
                     .insert(RoadComponent{
-                        intersection : *id,
-                        direction : conn.direction,
+                        intersection1 : *id,
+                        direction1 : conn.direction,
+                        intersection2: conn.next_intersection,
+                        direction2: conn.direction.get_straight_dir(),
                         num_cars : 0
                     })
-                    .insert(RoadComponent{
-                        intersection : conn.next_intersection,
-                        direction : conn.direction.get_straight_dir(),
-                        num_cars: 0
-                    })
-                    .insert(Moveable);
+                    .insert(Moveable)
+                    .insert(Scaleable);
                     used_roads.push((*id, conn.next_intersection));
                 }
                 
@@ -170,5 +173,5 @@ fn road_startup_system(
         }
         new_fringe.clear();
     }
-
+    println!("Ending Road Startup");
 }
