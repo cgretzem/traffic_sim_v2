@@ -2,7 +2,7 @@ use bevy::{prelude::*, ecs::query};
 
 use crate::{simulator::Simulator, traffic_logic::road::Direction, bevy_api::{components::{Moveable, Scaleable}, CAR_SPRITE_SCALE, FONT}};
 
-use super::{road::{RoadComponent, road_startup_system}, ROAD_SPRITE_SIZE, CAR_SPRITE_SIZE, GameTextures, simulator_startup_system};
+use super::{road::{RoadComponent, road_startup_system}, ROAD_SPRITE_SIZE, CAR_SPRITE_SIZE, GameTextures, simulator_startup_system, AppState};
 
 pub struct CarPlugin;
 
@@ -125,7 +125,33 @@ pub fn car_startup_system(
 }
 
 
-fn car_movement_system(){
+fn car_movement_system(
+    mut commands : Commands,
+    mut query : Query<(&mut Transform, &CarComponent)>,
+    mut query_road : Query<(&mut Transform, &mut RoadComponent)>,
+    sim : Res<Simulator>,
+    mut state : ResMut<State<AppState>>
+){
+    if *state.current() != AppState::MovingCars{
+        return
+    }
+
+    for (mut transform, car_comp) in query.iter_mut(){
+        let id = car_comp.0;
+        let car_position = match sim
+        .get_cars()
+        .iter()
+        .find(|car| car.get_id() == id){
+            None => continue,
+            Some(car) => car.get_position()
+        };
+
+        if let Some(current) = &car_position.current{
+
+        }
+        
+
+    }
 
 }
 

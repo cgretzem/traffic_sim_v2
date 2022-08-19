@@ -151,7 +151,8 @@ pub fn simulator_startup_system(
 pub enum AppState{
     Loading,
     MovingCars,
-    Ticking
+    Ticking,
+    Paused
 }
 
 
