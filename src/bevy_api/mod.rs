@@ -7,7 +7,7 @@ use crate::{simulator::Simulator, traffic_logic::road::{Road, Direction}};
 
 
 
-use self::{components::{Moveable, SimulatorPlugin, Scaleable}, car::CarComponent};
+use self::{components::{Moveable, SimulatorPlugin, Scaleable}};
 
 
 // region:    --- Game Textures
@@ -19,19 +19,22 @@ const INTERSECTION_SIZE: f32 = 50.;
 const CAR_SPRITE:&str = "car_small.png";
 const CAR_SPRITE_SIZE:(f32, f32) = (376., 695.);
 const CAR_SPRITE_SCALE:f32 = ROAD_UNIT_DISTANCE/CAR_SPRITE_SIZE.1;
+
+const FONT:&str = "OpenSans-Bold.ttf";
 // endregion: --- Game Textures`
 
 
 // region:    --- Game Constants
 const SCROLL_SPEED:f32 = 10.;
 
-const SCALE_FACTOR:f32 = 0.05;
+const SCALE_FACTOR:f32 = 0.02;
 // endregion: --- Game Constants
 
 
 pub struct GameTextures{
     road: Handle<Image>,
-    car: Handle<Image>
+    car: Handle<Image>,
+    font : Handle<Font>
 }
 
 pub fn run(){
@@ -44,6 +47,7 @@ pub fn run(){
         height: 676.0,
         ..Default::default()
     })
+    .add_state(AppState::Loading)
     .add_plugins(DefaultPlugins)
     .add_system(drag_background_system)
     .add_plugin(ScalePlugin)
@@ -63,19 +67,26 @@ impl Plugin for ScalePlugin{
 
 fn scale_cars(
     mut scroll_evr: EventReader<MouseWheel>,
-    mut query : Query<&mut Transform, (With<Scaleable>, With<Scaleable>)>
+    mut query : Query<&mut Transform, With<Scaleable>>
 ){
+    //howto fix scaling
+    //edit the actual sprite sizes to fit togther so scaling is 1 before this system
     for ev in scroll_evr.iter(){
         match ev.unit{
             MouseScrollUnit::Line => {
                 for mut transform in query.iter_mut(){
-                    transform.scale = Vec3::new(transform.scale.x + 0.05*ev.y, transform.scale.y + 0.05*ev.y, 1.);
-                    //transform.translation = Vec3::new(transform.translation.x * 0.05*ev.y, transform.translation.y * 0.05*ev.y, 1.);
+                    let new_scale = Vec3::new(transform.scale.x * (1.0+(SCALE_FACTOR*ev.y)), transform.scale.y * (1.0+(SCALE_FACTOR*ev.y)), 1.);
+                    if (new_scale.x < 0. || new_scale.y < 0.) && ev.y < 0.{
+                        println!("x : {}, y: {}", new_scale.x, new_scale.y);
+                        return
+                    }
+                    transform.scale = Vec3::new(transform.scale.x * (1.0+(SCALE_FACTOR*ev.y)), transform.scale.y * (1.0+(SCALE_FACTOR*ev.y)), 1.);
+                    transform.translation = Vec3::new(transform.translation.x * (1.0+(SCALE_FACTOR*ev.y)), transform.translation.y * (1.0+(SCALE_FACTOR*ev.y)), transform.translation.z);
                 }
             },
             _=> {
                 for mut transform in query.iter_mut(){
-                    transform.scale = Vec3::new(transform.scale.x + 0.05*ev.y, transform.scale.y + 0.05*ev.y, 1.);
+                    transform.scale = Vec3::new(transform.scale.x * 1.02*ev.y, transform.scale.y * 1.02*ev.y, 1.);
                     //transform.translation = Vec3::new(transform.translation.x + 0.05*ev.y, transform.translation.y + 0.05*ev.y, 1.);
                 }
             }
@@ -120,7 +131,9 @@ pub fn simulator_startup_system(
 ){
     let gt = GameTextures{
         road: asset_server.load(ROAD_SPRITE),
-        car: asset_server.load(CAR_SPRITE)
+        car: asset_server.load(CAR_SPRITE),
+        font: asset_server.load(FONT)
+
     };
     commands.insert_resource(gt);
     commands.spawn_bundle(Camera2dBundle::default());
@@ -134,7 +147,12 @@ pub fn simulator_startup_system(
     //sim_state.set(SimState::Loaded).unwrap();
 
 }
-
+#[derive(Hash, Eq, PartialEq, Clone, Debug)]
+pub enum AppState{
+    Loading,
+    MovingCars,
+    Ticking
+}
 
 
 

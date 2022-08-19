@@ -1,6 +1,6 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, ecs::query};
 
-use crate::{simulator::Simulator, traffic_logic::road::Direction, bevy_api::{components::{Moveable, Scaleable}, CAR_SPRITE_SCALE}};
+use crate::{simulator::Simulator, traffic_logic::road::Direction, bevy_api::{components::{Moveable, Scaleable}, CAR_SPRITE_SCALE, FONT}};
 
 use super::{road::{RoadComponent, road_startup_system}, ROAD_SPRITE_SIZE, CAR_SPRITE_SIZE, GameTextures, simulator_startup_system};
 
@@ -37,7 +37,7 @@ pub fn car_startup_system(
     textures: Res<GameTextures>,
     //sim_state: Res<State<SimState>>
 ){
-    println!("Running Car Startup");
+
     // if let SimState::Loading = sim_state.current(){
     //     println!("{:?}", sim_state.current());
     //     return
@@ -50,7 +50,7 @@ pub fn car_startup_system(
     };
 
     for car in sim.get_cars().iter(){
-        let (road_transform, road_comp)= query
+        let (road_transform, mut road_comp)= query
             .iter_mut()
             .find(|(_transform, road_comp)|{
                 let int_id = car
@@ -107,7 +107,7 @@ pub fn car_startup_system(
                 texture: textures.car.clone(),
                 transform:Transform{
                     scale: Vec3::new(CAR_SPRITE_SCALE, CAR_SPRITE_SCALE, 1.),
-                    translation: Vec3::new(x,y,20.),
+                    translation: Vec3::new(x,y,15.),
                     rotation: rotation,
                     ..Default::default()
                 },
@@ -116,7 +116,54 @@ pub fn car_startup_system(
             .insert(Moveable)
             .insert(Scaleable)
             .insert(CarComponent(car.get_id()));
+            road_comp.num_cars += 1;
+
+           
 
     }
 
 }
+
+
+fn car_movement_system(){
+
+}
+
+// fn car_numbering_system(
+//     mut commands: Commands,
+//     query: Query<&Transform, With<CarComponent>>
+
+// ){
+                                    
+//     let rect = Vec2::new(15., 15.);
+//     commands.spawn_bundle(SpriteBundle{
+//         sprite: Sprite{
+//             color: Color::rgb(1.,0.,0.),
+//             custom_size : Some(Vec2::new(rect.x, rect.y)),
+//             ..Default::default()
+//         },
+//         transform:Transform{
+//             translation: Vec3::new(x,y,16.),
+//             ..Default::default()
+//         },
+//         ..Default::default()
+//     })
+//     .insert(Scaleable)
+//     .insert(Moveable);
+
+//     commands.spawn_bundle(Text2dBundle{
+//         text : Text::from_section(num_cars.to_string(), TextStyle {
+//             font : textures.font.clone(),
+//             font_size: 20.0,
+//             color: Color::WHITE,
+//             ..Default::default()
+//         }).with_alignment(TextAlignment::CENTER),
+//         transform:Transform{
+//             translation: Vec3::new(x-1.,y+1.,17.),
+//             ..Default::default()
+//         },
+//         ..Default::default()
+//     })
+//     .insert(Scaleable)
+//     .insert(Moveable);
+// }
