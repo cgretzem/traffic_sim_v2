@@ -7,7 +7,7 @@ use crate::{simulator::Simulator, traffic_logic::road::{Road, Direction}};
 
 
 
-use self::{components::{Moveable, SimulatorPlugin, Scaleable}};
+use self::{components::{Moveable, SimulatorPlugin, Scaleable}, car::CarPlugin};
 
 
 // region:    --- Game Textures
@@ -19,6 +19,7 @@ const INTERSECTION_SIZE: f32 = 50.;
 const CAR_SPRITE:&str = "car_small.png";
 const CAR_SPRITE_SIZE:(f32, f32) = (376., 695.);
 const CAR_SPRITE_SCALE:f32 = ROAD_UNIT_DISTANCE/CAR_SPRITE_SIZE.1;
+pub const CAR_SPEED: f32 = 5.;
 
 const FONT:&str = "OpenSans-Bold.ttf";
 // endregion: --- Game Textures`
@@ -52,6 +53,7 @@ pub fn run(){
     .add_system(drag_background_system)
     .add_plugin(ScalePlugin)
     .add_plugin(SimulatorPlugin)
+    .add_plugin(CarPlugin)
     .run();
 }
 
