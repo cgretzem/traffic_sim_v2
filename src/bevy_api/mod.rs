@@ -48,7 +48,7 @@ pub fn run(){
         height: 676.0,
         ..Default::default()
     })
-    .add_state(AppState::Loading)
+    .add_state(AppState::Waiting)
     .add_plugins(DefaultPlugins)
     .add_system(drag_background_system)
     .add_plugin(ScalePlugin)
@@ -144,17 +144,17 @@ pub fn simulator_startup_system(
     road.add_connection(1, 2, 5, Direction::North);
     road.add_connection(1, 3, 4, Direction::East);
     road.add_connection(1, 4, 7, Direction::West);
-    commands.insert_resource(Simulator::new(10, road));
-    //sim_state.overwrite_set(SimState::Loaded).unwrap();
-    //sim_state.set(SimState::Loaded).unwrap();
+    let mut sim = Simulator::new(1, road, true);
+    //sim.verbose = false;
+    commands.insert_resource(sim);
+
 
 }
 #[derive(Hash, Eq, PartialEq, Clone, Debug)]
 pub enum AppState{
-    Loading,
+    CalculatingCars,
     MovingCars,
-    Ticking,
-    Paused
+    Waiting
 }
 
 

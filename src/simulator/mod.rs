@@ -18,8 +18,8 @@ pub struct Simulator
 }
 
 impl Simulator{
-    pub fn new(num_cars: u32, road:Road) -> Self{
-        let mut sim = Simulator { cars:Vec::new(), intersections: HashMap::new(), road, verbose:true};
+    pub fn new(num_cars: u32, road:Road, verbose : bool) -> Self{
+        let mut sim = Simulator { cars:Vec::new(), intersections: HashMap::new(), road, verbose};
 
         for int in sim.road.get_all_intersections(){
             sim.intersections.insert(int, Intersection::new(int, 3));
@@ -51,7 +51,8 @@ impl Simulator{
         let dir = intersection_dirs.choose(&mut rand::thread_rng())
             .unwrap_or_else(|| panic!("Intersection {int_id} has no connections!"));
 
-        car.set_position(Position::new_current(*int_id, *dir))
+        car.set_position(Position::new_current(*int_id, *dir));
+        println!("Car {} spawned at the {:?} end of intersection {}", car.get_id(), dir, int_id);
     }
 
     pub fn tick(&mut self) {

@@ -9,7 +9,7 @@ use super::{GameTextures, ROAD_SPRITE_SIZE};
 #[derive(Component)]
 struct IntersectionComponent;
 
-#[derive(Component)]
+#[derive(Component, Debug)]
 pub struct RoadComponent{
     pub intersection1 : u32,
     pub direction1 : Direction,
@@ -41,7 +41,6 @@ pub fn road_startup_system(
     sim : Res<Simulator>,
     gt : Res<GameTextures>
 ){
-    println!("Running Road Startup");
     //calculate first intersection
     let mut fringe:Vec<u32> = Vec::new();
     let root = sim.get_random_intersection();
@@ -148,9 +147,9 @@ pub fn road_startup_system(
                     })
                     .insert(RoadComponent{
                         intersection1 : *id,
-                        direction1 : conn.direction,
+                        direction1 : conn.direction.get_straight_dir(),
                         intersection2: conn.next_intersection,
-                        direction2: conn.direction.get_straight_dir(),
+                        direction2: conn.direction,
                         num_cars : 0
                     })
                     .insert(Moveable)
@@ -173,5 +172,4 @@ pub fn road_startup_system(
         }
         new_fringe.clear();
     }
-    println!("Ending Road Startup");
 }
