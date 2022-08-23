@@ -156,7 +156,7 @@ fn car_in_between_system(
                         (center.x, top_y - car_offset - (CAR_SPRITE_SIZE.1* CAR_SPRITE_SCALE/2.), car_facing.north)
                     };
                     let new_y = begin.1 + ((between.progress/between.distance_to_next_intersection) as f32 *  (begin.1 - end.1).abs());
-                    (center.x, new_y - car_offset - (CAR_SPRITE_SIZE.1* CAR_SPRITE_SCALE/2.), car_facing.north)
+                    (center.x, new_y, car_facing.north)
                 }
                 //if x is not the same as road, we need to turn
             },
@@ -188,16 +188,82 @@ fn car_in_between_system(
                         (right_x + car_offset + (CAR_SPRITE_SIZE.1* CAR_SPRITE_SCALE/2.) - (CAR_SPRITE_SIZE.1* CAR_SPRITE_SCALE), center.y, car_facing.east)
                     };
                     let new_x = begin.1 + ((between.progress/between.distance_to_next_intersection) as f32 *  (begin.1 - end.1).abs());
-                    (new_x - car_offset - (CAR_SPRITE_SIZE.1* CAR_SPRITE_SCALE/2.), center.y , car_facing.north)//what the fuck
+                    (new_x , center.y , car_facing.north)//what the fuck
                 }
 
             },
             Direction::South => {
 
+                if transform.translation.x != center.x{
+                    let target = if road_comp.intersection2 == between.intersection_1{
+                        between.intersection_1
+                    }
+                    else{
+                        between.intersection_2
+                    };
+                    let (int_transform, int_comp) = int_query
+                    .iter()
+                    .find(|(transform, int_comp)|{
+                        int_comp.0 == between.intersection_1
+                    })
+                    .unwrap();
+
+                    (int_transform.translation.x, int_transform.translation.y, transform.rotation)
+                }
+                else{
+                    let begin = {
+                        let top_y = center.y + (size.y/2.);
+                        (center.x, top_y - car_offset - (CAR_SPRITE_SIZE.1* CAR_SPRITE_SCALE/2.), car_facing.north)
+                    };
+                    let end = {
+                        let (bot_x, bot_y) = (center.x, center.y - (size.y/2.));
+                        (bot_x, bot_y + car_offset + (CAR_SPRITE_SIZE.1* CAR_SPRITE_SCALE/2.), car_facing.south)
+                        
+                    };
+                    let new_y = begin.1 + ((between.progress/between.distance_to_next_intersection) as f32 *  (begin.1 - end.1).abs());
+                    (center.x, new_y, car_facing.north)
+                }
             }, 
             _ => {
+                if transform.translation.y != center.y{
+                    let target = if road_comp.intersection2 == between.intersection_1{
+                        between.intersection_1
+                    }
+                    else{
+                        between.intersection_2
+                    };
+                    let (int_transform, int_comp) = int_query
+                    .iter()
+                    .find(|(transform, int_comp)|{
+                        int_comp.0 == between.intersection_1
+                    })
+                    .unwrap();
 
+                    (int_transform.translation.x, int_transform.translation.y, transform.rotation)
+                }
+                else{
+                    let begin = {
+                        let right_x = center.x + (size.y/2.);
+                        (right_x + car_offset + (CAR_SPRITE_SIZE.1* CAR_SPRITE_SCALE/2.) - (CAR_SPRITE_SIZE.1* CAR_SPRITE_SCALE), center.y, car_facing.east)
+                    };
+                    let end = {
+                        let left_x = center.x - (size.y/2.);
+                        (left_x - car_offset - (CAR_SPRITE_SIZE.1 * CAR_SPRITE_SCALE/2.) + (CAR_SPRITE_SIZE.1* CAR_SPRITE_SCALE), center.y, car_facing.west)
+                        
+                    };
+                    let new_x = begin.1 + ((between.progress/between.distance_to_next_intersection) as f32 *  (begin.1 - end.1).abs());
+                    (new_x , center.y , car_facing.north)//what the fuck
+                }
             }, 
+        };
+
+        match dir{
+            Direction::North || Direction::South => {
+                if transform.translation.x != center.x{
+            },
+            Direction::East => todo!(),
+            Direction::South => todo!(),
+            Direction::West => todo!(),
         }
     }
 }
