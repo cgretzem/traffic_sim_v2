@@ -35,7 +35,7 @@ const SCALE_FACTOR:f32 = 0.02;
 pub struct GameTextures{
     road: Handle<Image>,
     car: Handle<Image>,
-    font : Handle<Font>
+    _font : Handle<Font>
 }
 
 pub fn run(){
@@ -48,7 +48,6 @@ pub fn run(){
         height: 676.0,
         ..Default::default()
     })
-    .add_state(AppState::Waiting)
     .add_plugins(DefaultPlugins)
     .add_system(drag_background_system)
     .add_plugin(ScalePlugin)
@@ -134,7 +133,7 @@ pub fn simulator_startup_system(
     let gt = GameTextures{
         road: asset_server.load(ROAD_SPRITE),
         car: asset_server.load(CAR_SPRITE),
-        font: asset_server.load(FONT)
+        _font: asset_server.load(FONT)
 
     };
     commands.insert_resource(gt);
@@ -144,17 +143,10 @@ pub fn simulator_startup_system(
     road.add_connection(1, 2, 5, Direction::North);
     road.add_connection(1, 3, 4, Direction::East);
     road.add_connection(1, 4, 7, Direction::West);
-    let mut sim = Simulator::new(1, road, true);
-    //sim.verbose = false;
+    let sim = Simulator::new(1, road, true);
     commands.insert_resource(sim);
 
 
-}
-#[derive(Hash, Eq, PartialEq, Clone, Debug)]
-pub enum AppState{
-    CalculatingCars,
-    MovingCars,
-    Waiting
 }
 
 

@@ -7,7 +7,7 @@ use super::{GameTextures, ROAD_SPRITE_SIZE};
 
 // region:    --- Road Components
 #[derive(Component)]
-struct IntersectionComponent;
+pub struct IntersectionComponent(pub u32);
 
 #[derive(Component, Debug)]
 pub struct RoadComponent{
@@ -60,7 +60,7 @@ pub fn road_startup_system(
     })
     .insert(Moveable)
     .insert(Scaleable)
-    .insert(IntersectionComponent);
+    .insert(IntersectionComponent(root));
 
 
     fringe.push(root); // adding inital intersection to fringe
@@ -116,7 +116,7 @@ pub fn road_startup_system(
                 })
                 .insert(Moveable)
                 .insert(Scaleable)
-                .insert(IntersectionComponent);
+                .insert(IntersectionComponent(conn.next_intersection));
 
                 int_map.insert(conn.next_intersection, (x,y));
 
