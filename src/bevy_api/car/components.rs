@@ -3,9 +3,11 @@ use bevy::prelude::*;
 pub struct MovementComponent{
     pub end_x_coord:f32,
     pub end_y_coord:f32,
-    pub start_rotation: Quat,
     pub end_rotation: Quat,
+    pub next_move: bool
 }
+
+
 
 #[derive(Component)]
 pub struct CurrentComponent;

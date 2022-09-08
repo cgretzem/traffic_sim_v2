@@ -2,15 +2,20 @@ use bevy::prelude::*;
 
 use crate::{traffic_logic::road::Direction, simulator::Simulator, bevy_api::{road::{RoadComponent, self, IntersectionComponent}, ROAD_SPRITE_SIZE, CAR_SPRITE_SIZE, CAR_SPRITE_SCALE}};
 
-use super::{components::{CarComponent, CarRotation, CurrentComponent, BetweenComponent, MovementComponent}, AppState};
+use super::{components::{CarComponent, CarRotation, CurrentComponent, BetweenComponent, MovementComponent}, AppState, CalcState};
 
 pub fn car_at_intersection_system(
     mut commands : Commands,
     query : Query<(Entity, &CarComponent), With<CurrentComponent>>,
     query_road: Query<(&Transform, &RoadComponent, ), Without<CurrentComponent>>,
     sim : Res<Simulator>,
-    mut state : ResMut<State<AppState>>
+    mut state : ResMut<State<AppState>>,
+    mut calc_state : ResMut<State<CalcState>>
 ){
+    println!("Test1");
+    if *calc_state.current() != CalcState::Waiting{
+        return
+    }
     for (entity, car_comp) in query.iter(){
         let car = sim.get_cars()
             .iter()
@@ -75,22 +80,29 @@ pub fn car_at_intersection_system(
                 end_x_coord : x,
                 end_y_coord: y,
                 end_rotation: rotation,
-                start_rotation : rotation
+                next_move : false
             })
             .remove::<CurrentComponent>();
             
     }
-    state.set(AppState::MovingCars).unwrap();
+    calc_state.set(CalcState::Next).unwrap_or_else(|_|());
 }
 
 
-fn car_in_between_system(
+pub fn car_in_between_system(
     sim : Res<Simulator>,
     query : Query<(Entity, &CarComponent, &Transform), With<BetweenComponent>>,
     query_road: Query<(&Transform, &RoadComponent, ), Without<CurrentComponent>>,
     int_query : Query<(&Transform, &IntersectionComponent), (Without<CarComponent>, Without<RoadComponent>)>,
-    mut commands : Commands
+    mut commands : Commands,
+    mut state : ResMut<State<AppState>>,
+    mut calc_state : ResMut<State<CalcState>>
 ){
+    if *calc_state.current() != CalcState::Next{
+        return
+    }
+    
+    println!("Test1");
     for (entity, car_comp, transform) in query.iter(){
         let car = sim.get_cars()
             .iter()
@@ -187,8 +199,8 @@ fn car_in_between_system(
                         let right_x = center.x + (size.y/2.);
                         (right_x + car_offset + (CAR_SPRITE_SIZE.1* CAR_SPRITE_SCALE/2.) - (CAR_SPRITE_SIZE.1* CAR_SPRITE_SCALE), center.y, car_facing.east)
                     };
-                    let new_x = begin.1 + ((between.progress/between.distance_to_next_intersection) as f32 *  (begin.1 - end.1).abs());
-                    (new_x , center.y , car_facing.north)//what the fuck
+                    let new_x = begin.0 + ((between.progress/between.distance_to_next_intersection) as f32 *  (begin.0 - end.0).abs());
+                    (new_x , center.y , car_facing.east)//what the fuck
                 }
 
             },
@@ -207,7 +219,6 @@ fn car_in_between_system(
                         int_comp.0 == between.intersection_1
                     })
                     .unwrap();
-
                     (int_transform.translation.x, int_transform.translation.y, transform.rotation)
                 }
                 else{
@@ -221,7 +232,7 @@ fn car_in_between_system(
                         
                     };
                     let new_y = begin.1 + ((between.progress/between.distance_to_next_intersection) as f32 *  (begin.1 - end.1).abs());
-                    (center.x, new_y, car_facing.north)
+                    (center.x, new_y, car_facing.south)
                 }
             }, 
             _ => {
@@ -251,21 +262,37 @@ fn car_in_between_system(
                         (left_x - car_offset - (CAR_SPRITE_SIZE.1 * CAR_SPRITE_SCALE/2.) + (CAR_SPRITE_SIZE.1* CAR_SPRITE_SCALE), center.y, car_facing.west)
                         
                     };
-                    let new_x = begin.1 + ((between.progress/between.distance_to_next_intersection) as f32 *  (begin.1 - end.1).abs());
-                    (new_x , center.y , car_facing.north)//what the fuck
+                    let new_x = begin.0 + ((between.progress/between.distance_to_next_intersection) as f32 *  (begin.0 - end.0).abs());
+                    (new_x , center.y , car_facing.west)//what the fuck
                 }
             }, 
         };
 
+        let mut move_comp = MovementComponent{
+            end_x_coord : x,
+            end_y_coord : y,
+            end_rotation : rotation,
+            next_move: false
+        };
         match dir{
-            Direction::North || Direction::South => {
+            Direction::North | Direction::South => {
                 if transform.translation.x != center.x{
+                    move_comp.next_move = true;
+                }
+
             },
-            Direction::East => todo!(),
-            Direction::South => todo!(),
-            Direction::West => todo!(),
+            _ => {
+                if transform.translation.y != center.y{
+                    move_comp.next_move = true;
+                }
+            }
         }
+        commands.entity(entity)
+            .insert(move_comp);
     }
+    calc_state.set(CalcState::Waiting).unwrap();
+    state.set(AppState::MovingCars).unwrap();
+
 }
 
 
@@ -287,11 +314,15 @@ pub fn car_positioning_system(
         .0;
         if let Some(_) = position.current{
             commands.entity(entity)
+                .remove::<BetweenComponent>()
                 .insert(CurrentComponent);
         }
         else{
             commands.entity(entity)
+                .remove::<CurrentComponent>()
                 .insert(BetweenComponent);
+                
+                
         }
     }
     state.set(AppState::CalculatingCars).unwrap();

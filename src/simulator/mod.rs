@@ -30,6 +30,7 @@ impl Simulator{
             let int_id = &sim.road.get_random_intersection();
             sim.set_random_start(&mut car, int_id);
             sim.cars.push(car);
+            sim.set_random_intention(i);
         }
         
         sim
@@ -193,6 +194,12 @@ impl Simulator{
     
     pub fn get_random_intersection(&self) -> u32{
         self.road.get_random_intersection()
+    }
+
+    pub fn set_random_intention(&mut self, car_id: u32){
+        self.cars.iter_mut().find(|car| car_id == car.get_id())
+            .unwrap_or_else(|| panic!("Could not find car with id {car_id}"))
+            .set_intent(Direction::get_random_dir());
     }
 
 }

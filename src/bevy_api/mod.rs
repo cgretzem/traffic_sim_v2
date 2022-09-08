@@ -143,6 +143,8 @@ pub fn simulator_startup_system(
     road.add_connection(1, 2, 5, Direction::North);
     road.add_connection(1, 3, 4, Direction::East);
     road.add_connection(1, 4, 7, Direction::West);
+    road.add_connection(5, 2, 7, Direction::East);
+    road.add_connection(5, 7, 5, Direction::South);
     let sim = Simulator::new(1, road, true);
     commands.insert_resource(sim);
 

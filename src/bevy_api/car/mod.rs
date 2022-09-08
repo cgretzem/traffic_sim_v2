@@ -7,7 +7,7 @@ use bevy::prelude::*;
 
 use crate::simulator::Simulator;
 
-use self::{components::CarComponent, startup::{car_movement_init_system, car_startup_system}, movement::{car_movement_system, movement_waiting_system}, calculations::{car_positioning_system, car_at_intersection_system}};
+use self::{components::CarComponent, startup::{car_startup_system}, movement::{car_movement_system, movement_waiting_system}, calculations::{car_positioning_system, car_at_intersection_system, car_in_between_system}};
 
 
 pub struct CarPlugin;
@@ -16,6 +16,7 @@ impl Plugin for CarPlugin{
     fn build(&self, app: &mut bevy::prelude::App) {
         app.add_startup_system_to_stage(StartupStage::PostStartup, car_startup_system);
         app.add_state(AppState::Waiting);
+        app.add_state(CalcState::Waiting);
         app.add_system_set(
             SystemSet::on_update(AppState::RemovingCars)
             .with_system(car_removal_system)
@@ -27,6 +28,7 @@ impl Plugin for CarPlugin{
         app.add_system_set(
             SystemSet::on_update(AppState::CalculatingCars)
             .with_system(car_at_intersection_system)
+            .with_system(car_in_between_system)
         );
         app.add_system_set(
             SystemSet::on_update(AppState::MovingCars)
@@ -87,4 +89,10 @@ pub enum AppState{
     CalculatingCars,
     MovingCars,
     Waiting
+}
+
+#[derive(Hash, Eq, PartialEq, Clone, Debug)]
+pub enum CalcState{
+    Waiting,
+    Next,
 }

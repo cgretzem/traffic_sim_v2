@@ -5,12 +5,12 @@ use crate::bevy_api::{CAR_SPEED};
 use super::{components::MovementComponent, AppState};
 
 pub fn car_movement_system(
-    mut query: Query<(Entity, &mut Transform, &MovementComponent)>,
+    mut query: Query<(Entity, &mut Transform, &mut MovementComponent)>,
     mut commands : Commands,
 
 ){
 
-    for (entity, mut transform, move_comp) in query.iter_mut(){
+    for (entity, mut transform, mut move_comp) in query.iter_mut(){
         let (x, y) = (transform.translation.x, transform.translation.y);
         let (goal_x, goal_y) = (move_comp.end_x_coord, move_comp.end_y_coord);
         let x_mul = {
@@ -54,9 +54,17 @@ pub fn car_movement_system(
 
         
         transform.translation = Vec3::new(final_x, final_y, transform.translation.z);
+        //println!("Final X : {final_x}\nFinal Y : {final_y}\nGoal X : {goal_x}\nGoal Y : {goal_y}");
         if final_x == goal_x && final_y == goal_y{
-            commands.entity(entity)
+            if move_comp.next_move == false{
+                commands.entity(entity)
                 .remove::<MovementComponent>();
+            }
+            else{
+                println!("Removed Component");
+                move_comp.next_move = false;
+            }
+            
         }
     }
     
